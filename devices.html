@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNTERA IoT - Pilih Alat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #dcfce7;
+      --primary-border: #bbf7d0;
+      --surface: #ffffff;
+      --bg: #f4f6fb;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --radius: 14px;
+      --shadow: 0 1px 3px 0 rgba(15,23,42,0.04), 0 1px 2px -1px rgba(15,23,42,0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .page-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .brand-title h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand-title h2 span { color: var(--primary); }
+    .brand-title p { font-size: 12px; color: var(--text-muted); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .user-info strong { color: var(--text-main); }
+
+    .btn-logout {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-logout:hover {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    .page-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 28px;
+    }
+
+    .page-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .device-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .device-card:hover {
+      border-color: var(--primary-border);
+      box-shadow: 0 4px 12px rgba(21, 128, 61, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .device-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .device-id {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .status-dot.online {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .status-dot.offline {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .status-dot .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .status-dot.online .dot {
+      background: var(--primary);
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-dot.offline .dot { background: #94a3b8; }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .device-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .device-location {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .device-owner {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-open:hover { background: var(--primary-dark); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state p { font-size: 15px; margin-top: 12px; }
+
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="header-left">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.5 10-10 10z" />
+        </svg>
+      </div>
+      <div class="brand-title">
+        <h2>SYNTERA <span>IoT</span></h2>
+        <p>Pilih Unit Mesin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="user-info" id="userInfo"></span>
+      <button class="btn-logout" id="btnLogout">Keluar</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <h1 class="page-title" id="pageTitle">Alat Saya</h1>
+    <p class="page-subtitle" id="pageSubtitle">Pilih unit mesin untuk membuka dashboard monitoring & kontrol.</p>
+
+    <div class="loading" id="loadingState">Memuat daftar alat...</div>
+
+    <div class="devices-grid" id="devicesGrid" style="display:none;"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <polyline points="16 3 12 7 8 3"></polyline>
+      </svg>
+      <p>Belum ada alat yang terdaftar untuk akun Anda.</p>
+    </div>
+  </div>
+
+  <script>
+    const devicesGrid = document.getElementById('devicesGrid');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    const userInfo = document.getElementById('userInfo');
+    const pageTitle = document.getElementById('pageTitle');
+    const btnLogout = document.getElementById('btnLogout');
+
+    async function init() {
+      // Check auth
+      try {
+        const meRes = await fetch('/api/auth/me');
+        if (!meRes.ok) {
+          window.location.href = '/login.html';
+          return;
+        }
+        const meData = await meRes.json();
+        const user = meData.user;
+        userInfo.innerHTML = `Masuk sebagai <strong>${user.full_name || user.username}</strong> (${user.role})`;
+        pageTitle.textContent = user.role === 'admin' ? 'Semua Alat' : 'Alat Saya';
+      } catch {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Load devices
+      try {
+        const res = await fetch('/api/user/devices');
+        if (!res.ok) {
+          window.location.href = '/login.html';
+          return;
+        }
+        const data = await res.json();
+        loadingState.style.display = 'none';
+
+        if (data.devices.length === 0) {
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        devicesGrid.style.display = 'grid';
+        data.devices.forEach(d => {
+          const isOnline = d.connection === 'ONLINE';
+          const card = document.createElement('div');
+          card.className = 'device-card';
+          card.innerHTML = `
+            <div class="device-header">
+              <span class="device-id">${d.device_id}</span>
+              <span class="status-dot ${isOnline ? 'online' : 'offline'}">
+                <span class="dot"></span>
+                ${isOnline ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
+            <div class="device-label">${d.label || 'Mesin SYNTERA'}</div>
+            <div class="device-location">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              ${d.location || '-'}
+            </div>
+            ${d.owner_name ? `<div class="device-owner">Pemilik: ${d.owner_name}</div>` : ''}
+            <button class="btn-open" onclick="openDashboard('${d.device_id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              Masuk Dashboard
+            </button>
+          `;
+          devicesGrid.appendChild(card);
+        });
+
+      } catch (err) {
+        loadingState.textContent = 'Gagal memuat data. Coba refresh halaman.';
+      }
+    }
+
+    function openDashboard(deviceId) {
+      window.location.href = `/index.html?device=${deviceId}`;
+    }
+
+    btnLogout.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNTERA - IoT Dashboard Pengering Daun Nilam</title>
+  <meta name="description" content="Dashboard Monitoring & Kontrol Otomatis Pengering Daun Nilam Berbasis AI-IoT">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-full-wrapper">
+    <!-- Top Full-Width Header (125% Scaled) -->
+    <header class="top-header">
+      <div class="header-container">
+        <div class="header-brand-group">
+          <div class="brand-logo">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.5 10-10 10z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+            </svg>
+          </div>
+          <div class="brand-title">
+            <h2>SYNTERA <span>IoT</span></h2>
+            <p>Smart AI-IoT Dehumidification Dryer System</p>
+          </div>
+        </div>
+
+        <div class="header-right-actions">
+          <span class="header-tag" id="deviceTag">-</span>
+          <span class="header-tag">Batch Nilam #04</span>
+          <div class="status-badge offline" id="systemStatusBadge">
+            <span class="pulse-dot"></span>
+            <span id="systemStatusText">Menunggu ESP32...</span>
+          </div>
+          <button class="btn btn-outline btn-sm" id="btnToggleMode">Moda AI Adaptif</button>
+          <button class="btn btn-outline btn-sm" onclick="window.location.href='/devices.html'">Ganti Alat</button>
+          <button class="btn btn-primary btn-sm" id="btnBatchAction">Mulai Batch Baru</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Main Body (125% Scaled) -->
+    <main class="content-body" id="mainContentBody">
+      <!-- Top Section: Gauge (Left) + 2x2 Metrics (Center) + Donut Chart (Right, 2 Rows Tall) -->
+      <section class="summary-grid-3col">
+        <!-- 1. Speedometer Gauge Card (Left Column) -->
+        <div class="card gauge-summary-card">
+          <div class="card-header-sm">
+            <span class="card-label">Suhu Ruang (SHT31-D)</span>
+            <span class="dropdown-label">Target: 30-45°C</span>
+          </div>
+
+          <div class="gauge-center-wrapper">
+            <canvas id="tempGaugeCanvas" width="290" height="215"></canvas>
+          </div>
+
+          <div class="gauge-subtext">
+            <div class="gauge-status-tag gray" id="gaugeStatusTag">Sistem Siaga (STANDBY)</div>
+            <p id="gaugeSubtext">Menunggu transmisi data telemetri pertama dari ESP32...</p>
+          </div>
+        </div>
+
+        <!-- 2. 2x2 Metric Cards Grid (Center Column across 2 Rows) -->
+        <div class="metrics-compact-grid">
+          <!-- Metric 1: Kelembapan RH -->
+          <div class="card compact-metric-card">
+            <div class="card-header-mini">
+              <span class="card-label">Kelembapan Relatif (RH)</span>
+              <span class="dropdown-label">Real-Time</span>
+            </div>
+            <div class="metric-compact-body">
+              <div class="circle-icon blue">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                </svg>
+              </div>
+              <div class="metric-compact-info">
+                <div class="compact-value" id="valHumidity">-- <span class="unit">%</span></div>
+                <div class="compact-subtext">Target: 40.0 - 60.0 %</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 2: Bobot & Susut Nilam (Load Cell HX711) -->
+          <div class="card compact-metric-card">
+            <div class="card-header-mini">
+              <span class="card-label">Bobot Sampel (HX711)</span>
+              <span class="dropdown-label" id="valDryingRate">Rate: -- g/m</span>
+            </div>
+            <div class="metric-compact-body">
+              <div class="circle-icon green">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.5 10-10 10z" />
+                </svg>
+              </div>
+              <div class="metric-compact-info">
+                <div class="compact-value" id="valMoisture">-- <span class="unit">kg</span></div>
+                <div class="compact-subtext" id="valSubMoisture">Kapasitas: 5.0 kg (Target Plateu ≤0.5g/m)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 3: Estimasi Sisa Waktu (Huge Digits Centered, No Background) -->
+          <div class="card compact-metric-card time-clock-card">
+            <div class="card-header-mini">
+              <span class="card-label">Estimasi Titik Akhir (AI)</span>
+              <span class="dropdown-label">Batch #04</span>
+            </div>
+            <div class="digital-clock-wrapper">
+              <div class="huge-time-display">
+                <span class="huge-time-digits" id="valEstTimeDigits">--:--</span>
+                <span class="huge-time-unit">JAM</span>
+              </div>
+              <div class="digital-clock-subtext" id="valBatchDuration">Durasi Batch: 00:00:00</div>
+            </div>
+          </div>
+
+          <!-- Metric 4: Aktuator Aktif (Per-Line List with Header Divider) -->
+          <div class="card compact-metric-card">
+            <div class="card-header-mini">
+              <span class="card-label">Aktuator Aktif</span>
+              <span class="dropdown-label" id="valActuatorCount">0 / 3 Aktif</span>
+            </div>
+
+            <div class="actuator-list-container">
+              <div class="actuator-status-row">
+                <span class="act-name">Air Heater 300W</span>
+                <span class="act-badge inactive" id="chipHeater">○ OFF</span>
+              </div>
+              <div class="actuator-status-row">
+                <span class="act-name">Inline Duct Fan</span>
+                <span class="act-badge inactive" id="chipFan">○ OFF</span>
+              </div>
+              <div class="actuator-status-row">
+                <span class="act-name">Exhaust Fan Dinding</span>
+                <span class="act-badge inactive" id="chipPeltier">○ OFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Donut Chart Card (Right Column - Spans 2 Rows Vertically) -->
+        <div class="card donut-summary-card">
+          <div class="card-header-sm">
+            <span class="card-label">Distribusi Kerja Aktuator</span>
+            <span class="dropdown-label">Hari Ini</span>
+          </div>
+
+          <div class="donut-tall-wrapper">
+            <div class="donut-chart-container">
+              <canvas id="actuatorDonutChart" width="180" height="180"></canvas>
+              <div class="donut-center-text">
+                <span class="donut-val" id="donutValText">0%</span>
+                <span class="donut-lbl" id="donutLblText">Standby</span>
+              </div>
+            </div>
+
+            <div class="donut-legend-vertical">
+              <div class="legend-row-item">
+                <span class="legend-color-box rose"></span>
+                <span class="legend-name">Air Heater 300W</span>
+                <span class="legend-pct" id="donutPctHeater">0%</span>
+              </div>
+              <div class="legend-row-item">
+                <span class="legend-color-box blue"></span>
+                <span class="legend-name">Inline Duct Fan</span>
+                <span class="legend-pct" id="donutPctFan">0%</span>
+              </div>
+              <div class="legend-row-item">
+                <span class="legend-color-box purple"></span>
+                <span class="legend-name">Exhaust Fan</span>
+                <span class="legend-pct" id="donutPctPeltier">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Middle Section: Full-Width Telemetry Line Chart -->
+      <section class="chart-full-section">
+        <div class="card chart-large-card">
+          <div class="card-header-split">
+            <div>
+              <h3 class="card-title">Overall Telemetry Usage - Real-Time (Suhu & RH)</h3>
+              <p class="card-subtitle" id="telemetrySubtitle">Telemetri real-time interval 5 detik via SHT31-D, DS18B20 & Load Cell HX711</p>
+            </div>
+            <div class="chart-actions">
+              <button class="btn btn-xs btn-outline active" id="btnTime1m">1 Min</button>
+              <button class="btn btn-xs btn-outline" id="btnTime5m">5 Min</button>
+              <button class="btn btn-xs btn-outline" id="btnExportCSV" disabled>Export Data CSV</button>
+            </div>
+          </div>
+          <div class="chart-wrapper-large">
+            <canvas id="telemetryChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Section: Control Switches & Log Table -->
+      <section class="bottom-controls-grid">
+        <!-- Actuator Controls Panel -->
+        <div class="card actuators-panel-card">
+          <div class="card-header-split">
+            <h3 class="card-title">Status & Kendali Aktuator</h3>
+            <span class="control-mode-tag standby" id="controlModeTag">Standby (OFF)</span>
+          </div>
+
+          <div class="actuator-list">
+            <!-- Heater -->
+            <div class="actuator-item">
+              <div class="actuator-info">
+                <div class="actuator-icon heater-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="actuator-name">Air Heater 300W</div>
+                  <div class="actuator-detail">Pemanas Udara (Relay 1, Cut-off >65°C)</div>
+                </div>
+              </div>
+              <div class="actuator-controls">
+                <span class="status-indicator inactive" id="statusHeaterText">NON-AKTIF</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggleHeater" disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Inline Duct Fan -->
+            <div class="actuator-item">
+              <div class="actuator-info">
+                <div class="actuator-icon fan-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 12c-1.5-4-5-4-5-4a5 5 0 0 0 5 4z" />
+                    <path d="M12 12c4-1.5 4-5 4-5a5 5 0 0 0-4 5z" />
+                    <path d="M12 12c1.5 4 5 4 5 4a5 5 0 0 0-5-4z" />
+                    <path d="M12 12c-4 1.5-4 5-4 5a5 5 0 0 0 4-5z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="actuator-name">Inline Duct Fan 4"</div>
+                  <div class="actuator-detail">Sirkulasi Udara Dalam (Relay 2)</div>
+                </div>
+              </div>
+              <div class="actuator-controls">
+                <span class="status-indicator inactive" id="statusFanText">NON-AKTIF</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggleFan" disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Exhaust Fan -->
+            <div class="actuator-item">
+              <div class="actuator-info">
+                <div class="actuator-icon peltier-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" />
+                    <line x1="8" y1="16" x2="8.01" y2="16" />
+                    <line x1="8" y1="20" x2="8.01" y2="20" />
+                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                    <line x1="12" y1="22" x2="12.01" y2="22" />
+                    <line x1="16" y1="16" x2="16.01" y2="16" />
+                    <line x1="16" y1="20" x2="16.01" y2="20" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="actuator-name">Exhaust Fan Dinding</div>
+                  <div class="actuator-detail">Dehumidifikasi Evakuasi Uap (Relay 3)</div>
+                </div>
+              </div>
+              <div class="actuator-controls">
+                <span class="status-indicator inactive" id="statusPeltierText">NON-AKTIF</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="togglePeltier" disabled>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card logs-card">
+          <div class="card-header-split">
+            <div>
+              <h3 class="card-title">Log Aktivitas & Decision Feed (Real-Time)</h3>
+              <p class="card-subtitle">Riwayat pembacaan sensor dan aksi relay</p>
+            </div>
+            <button class="btn btn-xs btn-outline" id="btnClearLogs">Clear Log</button>
+          </div>
+          <div class="log-table-wrapper">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Sumber</th>
+                  <th>Suhu</th>
+                  <th>RH</th>
+                  <th>AI Status</th>
+                  <th>Aksi Aktuator</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody">
+                <tr>
+                  <td>--:--:--</td>
+                  <td><strong>SYSTEM</strong></td>
+                  <td>-- °C</td>
+                  <td>-- %</td>
+                  <td><span class="badge-tag standby">STANDBY</span></td>
+                  <td>Sistem SYNTERA dalam posisi SIAGA (OFF). Tekan tombol POWER untuk mengaktifkan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2026 SYNTERA - Enterprise AI-IoT Dehumidification Dryer System for Patchouli Leaf.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
