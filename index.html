@@ -40,7 +40,6 @@
 
         <div class="header-right-actions">
           <span class="header-tag" id="deviceTag">-</span>
-          <span class="header-tag">Batch Nilam #04</span>
           <div class="status-badge offline" id="systemStatusBadge">
             <span class="pulse-dot"></span>
             <span id="systemStatusText">Menunggu ESP32...</span>
@@ -60,7 +59,6 @@
         <div class="card gauge-summary-card">
           <div class="card-header-sm">
             <span class="card-label">Suhu Ruang</span>
-            <span class="dropdown-label">Target: 30-45°C</span>
           </div>
 
           <div class="gauge-center-wrapper">
@@ -68,8 +66,8 @@
           </div>
 
           <div class="gauge-subtext">
-            <div class="gauge-status-tag gray" id="gaugeStatusTag">Alat Siaga (Standby)</div>
-            <p id="gaugeSubtext">Menunggu alat dinyalakan...</p>
+            <div class="gauge-status-tag gray" id="gaugeStatusTag" style="display: none;">Alat Siaga (Standby)</div>
+            <p id="gaugeSubtext" style="display: none;">Menunggu alat dinyalakan...</p>
           </div>
         </div>
 
@@ -79,7 +77,6 @@
           <div class="card compact-metric-card">
             <div class="card-header-mini">
               <span class="card-label">Kelembapan Udara</span>
-              <span class="dropdown-label">Saat Ini</span>
             </div>
             <div class="metric-compact-body">
               <div class="circle-icon blue">
@@ -89,7 +86,6 @@
               </div>
               <div class="metric-compact-info">
                 <div class="compact-value" id="valHumidity">-- <span class="unit">%</span></div>
-                <div class="compact-subtext">Bagus: 40% - 60%</div>
               </div>
             </div>
           </div>
@@ -98,7 +94,6 @@
           <div class="card compact-metric-card">
             <div class="card-header-mini">
               <span class="card-label">Berat Daun</span>
-              <span class="dropdown-label" id="valDryingRate">Susut: --</span>
             </div>
             <div class="metric-compact-body">
               <div class="circle-icon green">
@@ -117,7 +112,6 @@
           <div class="card compact-metric-card time-clock-card">
             <div class="card-header-mini">
               <span class="card-label">Perkiraan Selesai</span>
-              <span class="dropdown-label">Otomatis</span>
             </div>
             <div class="digital-clock-wrapper">
               <div class="huge-time-display">
@@ -132,7 +126,6 @@
           <div class="card compact-metric-card">
             <div class="card-header-mini">
               <span class="card-label">Kipas & Pemanas</span>
-              <span class="dropdown-label" id="valActuatorCount">0 / 3 Menyala</span>
             </div>
 
             <div class="actuator-list-container">
@@ -141,11 +134,11 @@
                 <span class="act-badge inactive" id="chipHeater">MATI</span>
               </div>
               <div class="actuator-status-row">
-                <span class="act-name">Kipas Putar (Sirkulasi)</span>
+                <span class="act-name">Kipas Sirkulasi</span>
                 <span class="act-badge inactive" id="chipFan">MATI</span>
               </div>
               <div class="actuator-status-row">
-                <span class="act-name">Kipas Buang (Exhaust)</span>
+                <span class="act-name">Kipas Buang</span>
                 <span class="act-badge inactive" id="chipPeltier">MATI</span>
               </div>
             </div>
@@ -156,7 +149,6 @@
         <div class="card donut-summary-card">
           <div class="card-header-sm">
             <span class="card-label">Beban Kerja Alat</span>
-            <span class="dropdown-label">Hari Ini</span>
           </div>
 
           <div class="donut-tall-wrapper">
@@ -176,7 +168,7 @@
               </div>
               <div class="legend-row-item">
                 <span class="legend-color-box blue"></span>
-                <span class="legend-name">Kipas Putar</span>
+                <span class="legend-name">Kipas Sirkulasi</span>
                 <span class="legend-pct" id="donutPctFan">0%</span>
               </div>
               <div class="legend-row-item">
@@ -194,8 +186,7 @@
         <div class="card chart-large-card">
           <div class="card-header-split">
             <div>
-              <h3 class="card-title">Grafik Riwayat Suhu & Kelembapan</h3>
-              <p class="card-subtitle" id="telemetrySubtitle">Pantauan grafik otomatis setiap 5 detik</p>
+              <h3 class="card-title">Riwayat Suhu & Kelembapan</h3>
             </div>
             <div class="chart-actions">
               <button class="btn btn-xs btn-outline active" id="btnTime1m">1 Menit</button>
@@ -215,7 +206,6 @@
         <div class="card actuators-panel-card">
           <div class="card-header-split">
             <h3 class="card-title">Status & Kendali Aktuator</h3>
-            <span class="control-mode-tag standby" id="controlModeTag">Standby (OFF)</span>
           </div>
 
           <div class="actuator-list">
@@ -229,7 +219,6 @@
                 </div>
                 <div>
                   <div class="actuator-name">Pemanas Utama</div>
-                  <div class="actuator-detail">Menghangatkan ruang pengering</div>
                 </div>
               </div>
               <div class="actuator-controls">
@@ -254,8 +243,7 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="actuator-name">Kipas Putar (Sirkulasi)</div>
-                  <div class="actuator-detail">Meratakan panas ke setiap rak</div>
+                  <div class="actuator-name">Kipas Sirkulasi</div>
                 </div>
               </div>
               <div class="actuator-controls">
@@ -282,8 +270,7 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="actuator-name">Kipas Buang (Exhaust)</div>
-                  <div class="actuator-detail">Membuang uap basah ke luar</div>
+                  <div class="actuator-name">Kipas Buang</div>
                 </div>
               </div>
               <div class="actuator-controls">
