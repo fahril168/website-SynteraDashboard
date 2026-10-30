@@ -209,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateActuatorUI();
 
-    const hasSensorData = currentTemp !== null && currentHumidity !== null;
+    // Hanya tampilkan data angka jika alat sedang ONLINE dan data tersedia
+    const hasSensorData = isConnected && currentTemp !== null && currentHumidity !== null;
 
     if (hasSensorData) {
       if (valHumidity) valHumidity.innerHTML = `${currentHumidity.toFixed(1)} <span class="unit">%</span>`;
@@ -245,15 +246,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // AI Diagnosis update
     if (state.ai_diagnosis) {
       if (gaugeStatusTag) {
-        const isOptimal = state.ai_diagnosis.status_class === 'OPTIMAL';
-        const isStandby = state.ai_diagnosis.status_class === 'STANDBY';
-        const isEmergency = state.ai_diagnosis.status_class === 'EMERGENCY';
-        const badgeColor = isEmergency ? 'red' : (isStandby ? 'gray' : (isOptimal ? 'green' : 'amber'));
-        gaugeStatusTag.className = `gauge-status-tag ${badgeColor}`;
-        gaugeStatusTag.textContent = state.ai_diagnosis.status_title || 'Monitoring';
+        if (!isConnected) {
+          gaugeStatusTag.className = 'gauge-status-tag gray';
+          gaugeStatusTag.textContent = 'ESP32 OFFLINE';
+        } else {
+          const isOptimal = state.ai_diagnosis.status_class === 'OPTIMAL';
+          const isStandby = state.ai_diagnosis.status_class === 'STANDBY';
+          const isEmergency = state.ai_diagnosis.status_class === 'EMERGENCY';
+          const badgeColor = isEmergency ? 'red' : (isStandby ? 'gray' : (isOptimal ? 'green' : 'amber'));
+          gaugeStatusTag.className = `gauge-status-tag ${badgeColor}`;
+          gaugeStatusTag.textContent = state.ai_diagnosis.status_title || 'Monitoring';
+        }
       }
       if (gaugeSubtext) {
-        gaugeSubtext.textContent = state.ai_diagnosis.status_desc || '';
+        gaugeSubtext.textContent = !isConnected 
+          ? 'Koneksi ke alat fisik terputus. Menunggu sinyal telemetri ESP32...'
+          : (state.ai_diagnosis.status_desc || '');
       }
     }
 
