@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const deviceTag = document.getElementById('deviceTag');
   if (deviceTag) deviceTag.textContent = currentDeviceId;
 
-  // Event Listeners for Operational Controls
-  btnToggleMode.addEventListener('click', toggleSystemMode);
-  btnBatchAction.addEventListener('click', toggleBatchState);
+  // Event Listeners for Operational Controls (dengan pengecekan elemen agar tidak error)
+  if (btnToggleMode) btnToggleMode.addEventListener('click', toggleSystemMode);
+  if (btnBatchAction) btnBatchAction.addEventListener('click', toggleBatchState);
 
   if (btnClearLogs) {
     btnClearLogs.addEventListener('click', () => {
@@ -220,7 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
         valMoisture.innerHTML = `${currentWeight !== null ? currentWeight.toFixed(2) : '--'} <span class="unit">kg</span>`;
       }
       if (valDryingRate) {
-        valDryingRate.textContent = currentDryingRate !== null ? `Rate: ${currentDryingRate.toFixed(2)} g/m` : 'Rate: -- g/m';
+        let rateText = 'Normal';
+        if (currentDryingRate !== null) {
+          if (currentDryingRate > 1.5) rateText = 'Cepat';
+          else if (currentDryingRate <= 0.5) rateText = 'Hampir Kering';
+        }
+        valDryingRate.textContent = `Susut: ${rateText}`;
       }
 
       drawTemperatureGauge('tempGaugeCanvas', currentTemp, 0, 60, true);
