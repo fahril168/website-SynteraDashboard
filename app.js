@@ -241,10 +241,40 @@ document.addEventListener('DOMContentLoaded', () => {
       tempDataHistory.push(parseFloat(currentTemp.toFixed(1)));
       humidityDataHistory.push(parseFloat(currentHumidity.toFixed(1)));
       if (telemetryChart) telemetryChart.update();
+
+      // Hitung Estimasi Selesai & Lama Berjalan
+      batchDurationSeconds += 5; // Bertambah tiap polling 5 detik
+      let remainingSec = Math.max(0, totalBatchSeconds - batchDurationSeconds);
+
+      // Jika drying rate sangat rendah (hampir kering), perpendek sisa waktu
+      if (currentDryingRate !== null && currentDryingRate <= 0.5) {
+        remainingSec = Math.min(remainingSec, 300); // 5 menit sisa pendinginan
+      }
+
+      let estHrs = Math.floor(remainingSec / 3600);
+      let estMins = Math.floor((remainingSec % 3600) / 60);
+      let estHrsStr = estHrs < 10 ? '0' + estHrs : estHrs;
+      let estMinsStr = estMins < 10 ? '0' + estMins : estMins;
+
+      if (valEstTimeDigits) {
+        valEstTimeDigits.textContent = `${estHrsStr}:${estMinsStr}`;
+      }
+
+      const valBatchDuration = document.getElementById('valBatchDuration');
+      if (valBatchDuration) {
+        let runHrs = Math.floor(batchDurationSeconds / 3600);
+        let runMins = Math.floor((batchDurationSeconds % 3600) / 60);
+        let runSecs = batchDurationSeconds % 60;
+        let rHStr = runHrs < 10 ? '0' + runHrs : runHrs;
+        let rMStr = runMins < 10 ? '0' + runMins : runMins;
+        let rSStr = runSecs < 10 ? '0' + runSecs : runSecs;
+        valBatchDuration.textContent = `Lama Berjalan: ${rHStr}:${rMStr}:${rSStr}`;
+      }
     } else {
       if (valHumidity) valHumidity.innerHTML = '-- <span class="unit">%</span>';
       if (valMoisture) valMoisture.innerHTML = '-- <span class="unit">kg</span>';
       if (valDryingRate) valDryingRate.textContent = 'Rate: -- g/m';
+      if (valEstTimeDigits) valEstTimeDigits.textContent = '--:--';
       drawTemperatureGauge('tempGaugeCanvas', 0, 0, 60, false);
     }
 
