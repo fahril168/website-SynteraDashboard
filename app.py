@@ -201,61 +201,61 @@ def predict_ai_condition(temp, rh, heater_temp=None, drying_rate=None):
     if drying_rate is not None and 0 < drying_rate <= 0.5:
         return {
             "status_class": "OPTIMAL",
-            "status_title": "TITIK AKHIR TERCAPAI (AI STOP)",
-            "status_desc": "Laju susut bobot telah melandai (≤ 0.5 g/menit). Pengeringan selesai, mendinginkan daun nilam.",
+            "status_title": "PENGERINGAN SELESAI",
+            "status_desc": "Daun nilam sudah kering optimal. Pemanas dimatikan, mesin mendinginkan daun.",
             "confidence": 99.4,
             "recommended_heater": False,
             "recommended_fan": True,
             "recommended_exhaust": False,
-            "action_summary": "Selesai: Pemanas OFF, Pendinginan Daun Nilam"
+            "action_summary": "Selesai: Pemanas Mati, Pendinginan Aktif"
         }
 
     if rh > 60.0:
         return {
             "status_class": "DEHUMIDIFYING",
-            "status_title": "DEHUMIDIFIKASI AKTIF (RH > 60%)",
-            "status_desc": f"Kelembapan relatif tinggi ({rh:.1f}%). Mengaktifkan Exhaust Fan untuk evakuasi uap air.",
+            "status_title": "MEMBUANG UAP LEMBAP",
+            "status_desc": f"Udara cukup lembap ({rh:.1f}%). Kipas buang menyala otomatis mengeluarkan uap air.",
             "confidence": 98.5,
             "recommended_heater": temp < 35.0,
             "recommended_fan": True,
             "recommended_exhaust": True,
-            "action_summary": "Evakuasi Uap Air: Exhaust Fan ON & Sirkulasi Aktif"
+            "action_summary": "Kipas Buang Menyala"
         }
 
     elif temp < 30.0:
         return {
             "status_class": "HEATING",
-            "status_title": "PEMANASAN RUANG (< 30°C)",
-            "status_desc": f"Suhu kabinet di bawah rentang optimal ({temp:.1f}°C < 30°C). Mengaktifkan Air Heater.",
+            "status_title": "MENAIKKAN SUHU RUANG",
+            "status_desc": f"Suhu masih agak dingin ({temp:.1f}°C). Pemanas menyala otomatis menghangatkan daun.",
             "confidence": 97.2,
             "recommended_heater": True,
             "recommended_fan": True,
             "recommended_exhaust": rh > 55.0,
-            "action_summary": "Boost Air Heater (Relay 1 ON) & Sirkulasi Duct Fan"
+            "action_summary": "Pemanas Menyala Menghangatkan Ruang"
         }
 
     elif temp > 45.0:
         return {
             "status_class": "HEATING",
-            "status_title": "PROTEKSI SUHU ATAS (> 45°C)",
-            "status_desc": f"Suhu ruang mencapai {temp:.1f}°C (>45°C). Pemanas dimatikan sementara agar Patchouli Alcohol tidak rusak.",
+            "status_title": "SUHU TERLALU TINGGI (> 45°C)",
+            "status_desc": f"Suhu mencapai {temp:.1f}°C. Pemanas dimatikan sementara agar minyak nilam tidak rusak.",
             "confidence": 99.0,
             "recommended_heater": False,
             "recommended_fan": True,
             "recommended_exhaust": True,
-            "action_summary": "Proteksi PA: Air Heater OFF, Sirkulasi Udara ON"
+            "action_summary": "Pemanas Dimatikan Demi Keamanan"
         }
 
     else:
         return {
             "status_class": "OPTIMAL",
-            "status_title": "KONDISI MIKROKLIMAT: OPTIMAL",
-            "status_desc": f"Suhu ({temp:.1f}°C) dan RH ({rh:.1f}%) berada pada rentang presisi pengeringan daun nilam (30-45°C, 40-60% RH).",
+            "status_title": "KONDISI SANGAT BAGUS (AMAN)",
+            "status_desc": f"Suhu ({temp:.1f}°C) dan kelembapan ({rh:.1f}%) berada di batas aman pengeringan nilam.",
             "confidence": 98.8,
             "recommended_heater": temp < 38.0,
             "recommended_fan": True,
             "recommended_exhaust": rh > 50.0,
-            "action_summary": "Mempertahankan kestabilan suhu & sirkulasi udara"
+            "action_summary": "Suhu & udara stabil terjaga"
         }
 
 
