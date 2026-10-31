@@ -184,7 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
     heaterTemp = typeof state.heater_temp === 'number' ? state.heater_temp : null;
 
     const isConnected = state.connection === 'ONLINE';
-    const isRunning = isConnected && (state.machine_status === 'PROSES' || state.machine_status === 'BERJALAN' || state.machine_status === 'PENDINGINAN');
+    const isRunning = isConnected && (
+      state.machine_status === 'PROSES' || 
+      state.machine_status === 'BERJALAN' || 
+      state.machine_status === 'PENDINGINAN' || 
+      state.machine_status === 'SELESAI'
+    );
 
     heaterState = isRunning ? !!state.heater_state : false;
     fanState = isRunning ? !!state.fan_state : false;
@@ -197,8 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (systemStatusText) {
       if (!isConnected) {
         systemStatusText.textContent = 'ESP32 Offline / Menunggu...';
+      } else if (state.machine_status === 'SELESAI' || state.machine_status === 'PENDINGINAN') {
+        systemStatusText.textContent = 'Pendinginan (SELESAI)';
+      } else if (isRunning) {
+        systemStatusText.textContent = 'Mesin Berjalan (PROSES)';
       } else {
-        systemStatusText.textContent = isRunning ? 'Mesin Berjalan (PROSES)' : 'Alat Siaga (STANDBY)';
+        systemStatusText.textContent = 'Alat Siaga (STANDBY)';
       }
     }
 
