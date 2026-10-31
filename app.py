@@ -675,11 +675,15 @@ with app.app_context():
     db.create_all()
     # Migrasi otomatis jika kolom baru belum ada di tabel SQLite
     try:
-        conn = db.engine.connect()
-        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN run_time VARCHAR(20) DEFAULT '00:00:00'"))
-        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN est_time VARCHAR(20) DEFAULT '--:--'"))
-        conn.commit()
-        conn.close()
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE device_state ADD COLUMN run_time VARCHAR(20) DEFAULT '00:00:00'"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE device_state ADD COLUMN est_time VARCHAR(20) DEFAULT '--:--'"))
+            conn.commit()
     except Exception:
         pass
     seed_initial_data()
