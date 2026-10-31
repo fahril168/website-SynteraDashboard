@@ -113,7 +113,6 @@ class DeviceState(db.Model):
     # Connection
     connection_status = db.Column(db.String(20), default='OFFLINE')
     last_seen = db.Column(db.Float, nullable=True)
-    elapsed_seconds = db.Column(db.Integer, default=0) # Detik riil dari ESP32
 
     # AI diagnosis (stored as individual fields)
     ai_status_class = db.Column(db.String(30), default='STANDBY')
