@@ -472,8 +472,13 @@ def handle_esp32_telemetry():
         state.ai_confidence = ai_res['confidence']
         state.ai_action_summary = ai_res['action_summary']
 
-        # If AI mode, apply recommended actuator states
-        if state.is_ai_mode:
+        # Jika alat dalam posisi STANDBY (belum ditekan ON atau sudah ditekan OFF):
+        # Paksa semua aktuator MATI di server agar dashboard tidak salah menampilkan ON
+        if state.machine_status == 'STANDBY':
+            state.heater_state = False
+            state.fan_state = False
+            state.exhaust_state = False
+        elif state.is_ai_mode and 'heater' not in data:
             state.heater_state = ai_res['recommended_heater']
             state.fan_state = ai_res['recommended_fan']
             state.exhaust_state = ai_res['recommended_exhaust']
