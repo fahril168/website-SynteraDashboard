@@ -101,6 +101,8 @@ class DeviceState(db.Model):
     current_weight = db.Column(db.Float, nullable=True)
     current_drying_rate = db.Column(db.Float, nullable=True)
     heater_temp = db.Column(db.Float, nullable=True)
+    run_time = db.Column(db.String(20), default='00:00:00')
+    est_time = db.Column(db.String(20), default='--:--')
 
     # Actuator states
     is_ai_mode = db.Column(db.Boolean, default=True)
@@ -139,7 +141,8 @@ class DeviceState(db.Model):
             'fan_state': self.fan_state,
             'exhaust_state': self.exhaust_state,
             'last_seen': self.last_seen,
-            'elapsed_seconds': self.elapsed_seconds if self.connection_status == 'ONLINE' else 0,
+            'run_time': self.run_time if self.connection_status == 'ONLINE' else '00:00:00',
+            'est_time': self.est_time if self.connection_status == 'ONLINE' else '--:--',
             'ai_diagnosis': {
                 'status_class': self.ai_status_class,
                 'status_title': self.ai_status_title,
@@ -437,10 +440,13 @@ def handle_esp32_telemetry():
         state.current_weight = weight
     if drying_rate is not None:
         state.current_drying_rate = drying_rate
+    if 'run_time' in data:
+        state.run_time = data['run_time']
+    if 'est_time' in data:
+        state.est_time = data['est_time']
 
     state.connection_status = 'ONLINE'
     state.last_seen = time.time()
-    state.elapsed_seconds = elapsed_time
 
     # AI evaluation for this specific device
     ai_res = predict_ai_condition(temp, hum, heater_t, drying_rate)
@@ -667,13 +673,13 @@ def serve_css():
 
 with app.app_context():
     db.create_all()
-    # Migrasi otomatis jika kolom elapsed_seconds belum ada di tabel SQLite
+    # Migrasi otomatis jika kolom baru belum ada di tabel SQLite
     try:
         conn = db.engine.connect()
-        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN elapsed_seconds INTEGER DEFAULT 0"))
+        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN run_time VARCHAR(20) DEFAULT '00:00:00'"))
+        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN est_time VARCHAR(20) DEFAULT '--:--'"))
         conn.commit()
         conn.close()
-        print("[MIGRATION] Kolom elapsed_seconds berhasil ditambahkan ke device_state")
     except Exception:
         pass
     seed_initial_data()

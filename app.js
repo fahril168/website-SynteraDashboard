@@ -242,39 +242,25 @@ document.addEventListener('DOMContentLoaded', () => {
       humidityDataHistory.push(parseFloat(currentHumidity.toFixed(1)));
       if (telemetryChart) telemetryChart.update();
 
-      // Ambil Lama Berjalan riil dari server (sinkron dengan mesin fisik)
-      let elapsedSec = typeof state.elapsed_seconds === 'number' ? state.elapsed_seconds : 0;
-      let remainingSec = Math.max(0, totalBatchSeconds - elapsedSec);
-
-      // Jika drying rate sangat rendah (hampir kering), perpendek sisa waktu
-      if (currentDryingRate !== null && currentDryingRate <= 0.5) {
-        remainingSec = Math.min(remainingSec, 300); // 5 menit sisa pendinginan
-      }
-
-      let estHrs = Math.floor(remainingSec / 3600);
-      let estMins = Math.floor((remainingSec % 3600) / 60);
-      let estHrsStr = estHrs < 10 ? '0' + estHrs : estHrs;
-      let estMinsStr = estMins < 10 ? '0' + estMins : estMins;
+      // Tampilkan Perkiraan Selesai & Lama Berjalan murni langsung dari ESP32
+      const estTimeStr = state.est_time || '--:--';
+      const runTimeStr = state.run_time || '00:00:00';
 
       if (valEstTimeDigits) {
-        valEstTimeDigits.textContent = `${estHrsStr}:${estMinsStr}`;
+        valEstTimeDigits.textContent = estTimeStr;
       }
 
       const valBatchDuration = document.getElementById('valBatchDuration');
       if (valBatchDuration) {
-        let runHrs = Math.floor(elapsedSec / 3600);
-        let runMins = Math.floor((elapsedSec % 3600) / 60);
-        let runSecs = elapsedSec % 60;
-        let rHStr = runHrs < 10 ? '0' + runHrs : runHrs;
-        let rMStr = runMins < 10 ? '0' + runMins : runMins;
-        let rSStr = runSecs < 10 ? '0' + runSecs : runSecs;
-        valBatchDuration.textContent = `Lama Berjalan: ${rHStr}:${rMStr}:${rSStr}`;
+        valBatchDuration.textContent = `Lama Berjalan: ${runTimeStr}`;
       }
     } else {
       if (valHumidity) valHumidity.innerHTML = '-- <span class="unit">%</span>';
       if (valMoisture) valMoisture.innerHTML = '-- <span class="unit">kg</span>';
       if (valDryingRate) valDryingRate.textContent = 'Rate: -- g/m';
       if (valEstTimeDigits) valEstTimeDigits.textContent = '--:--';
+      const valBatchDuration = document.getElementById('valBatchDuration');
+      if (valBatchDuration) valBatchDuration.textContent = 'Lama Berjalan: 00:00:00';
       drawTemperatureGauge('tempGaugeCanvas', 0, 0, 60, false);
     }
 
