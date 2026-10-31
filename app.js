@@ -289,13 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Donut Chart
     const actCount = (heaterState ? 1 : 0) + (fanState ? 1 : 0) + (exhaustState ? 1 : 0);
     if (donutValText) donutValText.textContent = actCount > 0 ? `${Math.round((actCount / 3) * 100)}%` : '0%';
-    if (donutLblText) donutLblText.textContent = actCount > 0 ? 'Aktif' : 'Idle';
+    if (donutLblText) donutLblText.textContent = actCount > 0 ? 'Aktif' : 'Standby';
+
+    // Update persentase masing-masing beban kerja aktuator
+    if (donutPctHeater) donutPctHeater.textContent = heaterState ? '50%' : '0%';
+    if (donutPctFan) donutPctFan.textContent = fanState ? '30%' : '0%';
+    if (donutPctPeltier) donutPctPeltier.textContent = exhaustState ? '20%' : '0%';
 
     if (actuatorDonutChart) {
       if (actCount > 0) {
-        const hVal = heaterState ? 40 : 5;
-        const fVal = fanState ? 35 : 5;
-        const pVal = exhaustState ? 25 : 5;
+        const hVal = heaterState ? 50 : 0;
+        const fVal = fanState ? 30 : 0;
+        const pVal = exhaustState ? 20 : 0;
         actuatorDonutChart.data.datasets[0].data = [hVal, fVal, pVal];
         actuatorDonutChart.data.datasets[0].backgroundColor = ['#e11d48', '#0284c7', '#7c3aed'];
       } else {
