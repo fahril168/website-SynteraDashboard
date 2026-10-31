@@ -202,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (systemStatusText) {
       if (!isConnected) {
         systemStatusText.textContent = 'ESP32 Offline / Menunggu...';
+      } else if (state.machine_status === 'ERROR') {
+        systemStatusText.textContent = 'BAHAYA / ERROR!';
       } else if (state.machine_status === 'SELESAI' || state.machine_status === 'PENDINGINAN') {
         systemStatusText.textContent = 'Pendinginan (SELESAI)';
       } else if (isRunning) {
