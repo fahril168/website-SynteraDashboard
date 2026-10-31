@@ -703,7 +703,7 @@ def fix_db_schema_now():
     msg = []
     with db.engine.connect() as conn:
         for col, col_type, default_val in [
-            ('elapsed_seconds', 'INTEGER', '0'),
+            ('machine_status', 'VARCHAR(20)', "'STANDBY'"),
             ('run_time', 'VARCHAR(20)', "'00:00:00'"),
             ('est_time', 'VARCHAR(20)', "'--:--'")
         ]:
@@ -712,7 +712,7 @@ def fix_db_schema_now():
                 conn.commit()
                 msg.append(f"Added {col}")
             except Exception as e:
-                msg.append(f"{col} already exists or error: {e}")
+                msg.append(f"{col} error: {e}")
     return jsonify({"status": "done", "details": msg}), 200
 
 
