@@ -111,6 +111,7 @@ class DeviceState(db.Model):
     # Connection
     connection_status = db.Column(db.String(20), default='OFFLINE')
     last_seen = db.Column(db.Float, nullable=True)
+    batch_start_time = db.Column(db.Float, nullable=True) # Waktu mulai batch agar tidak reset saat web di-refresh
 
     # AI diagnosis (stored as individual fields)
     ai_status_class = db.Column(db.String(30), default='STANDBY')
@@ -124,6 +125,11 @@ class DeviceState(db.Model):
         # Auto-detect offline: no data for > 15 seconds
         if self.last_seen and (time.time() - self.last_seen > 15):
             self.connection_status = 'OFFLINE'
+            self.batch_start_time = None # Reset batch saat mesin mati
+
+        elapsed_seconds = 0
+        if self.connection_status == 'ONLINE' and self.batch_start_time:
+            elapsed_seconds = int(time.time() - self.batch_start_time)
 
         return {
             'is_system_on': True,
@@ -138,6 +144,7 @@ class DeviceState(db.Model):
             'fan_state': self.fan_state,
             'exhaust_state': self.exhaust_state,
             'last_seen': self.last_seen,
+            'elapsed_seconds': elapsed_seconds,
             'ai_diagnosis': {
                 'status_class': self.ai_status_class,
                 'status_title': self.ai_status_title,
@@ -437,6 +444,8 @@ def handle_esp32_telemetry():
 
     state.connection_status = 'ONLINE'
     state.last_seen = time.time()
+    if not state.batch_start_time:
+        state.batch_start_time = time.time() # Mulai catat waktu awal batch saat telemetri pertama masuk
 
     # AI evaluation for this specific device
     ai_res = predict_ai_condition(temp, hum, heater_t, drying_rate)
