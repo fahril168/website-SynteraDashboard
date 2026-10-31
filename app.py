@@ -439,6 +439,14 @@ def handle_esp32_telemetry():
             state.current_weight = weight
         if drying_rate is not None:
             state.current_drying_rate = drying_rate
+
+        # Baca status fisik aktuator asli dari ESP32
+        if 'heater' in data:
+            state.heater_state = bool(data['heater'])
+        if 'fan' in data:
+            state.fan_state = bool(data['fan'])
+        if 'exhaust' in data:
+            state.exhaust_state = bool(data['exhaust'])
         
         try:
             if 'run_time' in data:
