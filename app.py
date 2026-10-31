@@ -680,6 +680,25 @@ def serve_css():
     return send_from_directory('.', 'styles.css')
 
 
+@app.route('/api/fix-db-schema-now', methods=['GET'])
+def fix_db_schema_now():
+    """Endpoint darurat untuk memastikan kolom ada tanpa perlu akses terminal sqlite."""
+    msg = []
+    with db.engine.connect() as conn:
+        for col, col_type, default_val in [
+            ('elapsed_seconds', 'INTEGER', '0'),
+            ('run_time', 'VARCHAR(20)', "'00:00:00'"),
+            ('est_time', 'VARCHAR(20)', "'--:--'")
+        ]:
+            try:
+                conn.execute(db.text(f"ALTER TABLE device_state ADD COLUMN {col} {col_type} DEFAULT {default_val}"))
+                conn.commit()
+                msg.append(f"Added {col}")
+            except Exception as e:
+                msg.append(f"{col} already exists or error: {e}")
+    return jsonify({"status": "done", "details": msg}), 200
+
+
 # =============================================================================
 # STARTUP
 # =============================================================================
