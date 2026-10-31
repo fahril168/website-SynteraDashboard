@@ -412,92 +412,106 @@ def handle_esp32_telemetry():
     if not device_id:
         return jsonify({"error": "device_id is required"}), 400
 
-    # Lookup device
-    device = db.session.get(Device, device_id)
-    if not device:
-        return jsonify({"error": f"Device '{device_id}' not registered"}), 404
+    try:
+        # Lookup device
+        device = db.session.get(Device, device_id)
+        if not device:
+            return jsonify({"error": f"Device '{device_id}' not registered"}), 404
 
-    # Ensure DeviceState exists
-    state = device.state
-    if not state:
-        state = DeviceState(device_id=device_id)
-        db.session.add(state)
+        # Ensure DeviceState exists
+        state = device.state
+        if not state:
+            state = DeviceState(device_id=device_id)
+            db.session.add(state)
 
-    # Parse sensor data
-    temp = float(data.get('temp', 0))
-    hum = float(data.get('humidity', 0))
-    heater_t = float(data.get('heater_temp', 0)) if 'heater_temp' in data else None
-    weight = float(data.get('weight', 0)) if 'weight' in data else None
-    drying_rate = float(data.get('drying_rate', 0)) if 'drying_rate' in data else None
-    elapsed_time = int(data.get('elapsed_time', 0)) if 'elapsed_time' in data else 0
+        # Parse sensor data
+        temp = float(data.get('temp', 0))
+        hum = float(data.get('humidity', 0))
+        heater_t = float(data.get('heater_temp', 0)) if 'heater_temp' in data else None
+        weight = float(data.get('weight', 0)) if 'weight' in data else None
+        drying_rate = float(data.get('drying_rate', 0)) if 'drying_rate' in data else None
 
-    # Update device state
-    state.current_temp = temp
-    state.current_humidity = hum
-    if heater_t is not None:
-        state.heater_temp = heater_t
-    if weight is not None:
-        state.current_weight = weight
-    if drying_rate is not None:
-        state.current_drying_rate = drying_rate
-    if 'run_time' in data:
-        state.run_time = data['run_time']
-    if 'est_time' in data:
-        state.est_time = data['est_time']
+        # Update device state
+        state.current_temp = temp
+        state.current_humidity = hum
+        if heater_t is not None:
+            state.heater_temp = heater_t
+        if weight is not None:
+            state.current_weight = weight
+        if drying_rate is not None:
+            state.current_drying_rate = drying_rate
+        
+        try:
+            if 'run_time' in data:
+                state.run_time = str(data['run_time'])
+            if 'est_time' in data:
+                state.est_time = str(data['est_time'])
+        except Exception:
+            pass
 
-    state.connection_status = 'ONLINE'
-    state.last_seen = time.time()
+        state.connection_status = 'ONLINE'
+        state.last_seen = time.time()
 
-    # AI evaluation for this specific device
-    ai_res = predict_ai_condition(temp, hum, heater_t, drying_rate)
+        # AI evaluation for this specific device
+        ai_res = predict_ai_condition(temp, hum, heater_t, drying_rate)
 
-    state.ai_status_class = ai_res['status_class']
-    state.ai_status_title = ai_res['status_title']
-    state.ai_status_desc = ai_res['status_desc']
-    state.ai_confidence = ai_res['confidence']
-    state.ai_action_summary = ai_res['action_summary']
+        state.ai_status_class = ai_res['status_class']
+        state.ai_status_title = ai_res['status_title']
+        state.ai_status_desc = ai_res['status_desc']
+        state.ai_confidence = ai_res['confidence']
+        state.ai_action_summary = ai_res['action_summary']
 
-    # If AI mode, apply recommended actuator states
-    if state.is_ai_mode:
-        state.heater_state = ai_res['recommended_heater']
-        state.fan_state = ai_res['recommended_fan']
-        state.exhaust_state = ai_res['recommended_exhaust']
+        # If AI mode, apply recommended actuator states
+        if state.is_ai_mode:
+            state.heater_state = ai_res['recommended_heater']
+            state.fan_state = ai_res['recommended_fan']
+            state.exhaust_state = ai_res['recommended_exhaust']
 
-    # Log telemetry
-    log = TelemetryLog(
-        device_id=device_id,
-        timestamp_str=time.strftime("%H:%M:%S"),
-        temp=temp,
-        humidity=hum,
-        weight=weight,
-        heater_temp=heater_t,
-        drying_rate=drying_rate,
-        status_class=ai_res['status_class'],
-        action_summary=ai_res['action_summary']
-    )
-    db.session.add(log)
+        # Log telemetry
+        try:
+            log = TelemetryLog(
+                device_id=device_id,
+                timestamp_str=time.strftime("%H:%M:%S"),
+                temp=temp,
+                humidity=hum,
+                weight=weight,
+                heater_temp=heater_t,
+                drying_rate=drying_rate,
+                status_class=ai_res['status_class'],
+                action_summary=ai_res['action_summary']
+            )
+            db.session.add(log)
 
-    # Trim old logs (keep last 100 per device)
-    log_count = TelemetryLog.query.filter_by(device_id=device_id).count()
-    if log_count > 100:
-        oldest = TelemetryLog.query.filter_by(device_id=device_id)\
-            .order_by(TelemetryLog.id.asc()).limit(log_count - 100).all()
-        for old in oldest:
-            db.session.delete(old)
+            # Trim old logs (keep last 100 per device)
+            log_count = TelemetryLog.query.filter_by(device_id=device_id).count()
+            if log_count > 100:
+                oldest = TelemetryLog.query.filter_by(device_id=device_id)\
+                    .order_by(TelemetryLog.id.asc()).limit(log_count - 100).all()
+                for old in oldest:
+                    db.session.delete(old)
+        except Exception:
+            pass
 
-    db.session.commit()
+        db.session.commit()
 
-    # Response back to ESP32
-    return jsonify({
-        "status": "success",
-        "device_id": device_id,
-        "is_ai_mode": state.is_ai_mode,
-        "control": {
-            "heater": state.heater_state,
-            "fan": state.fan_state,
-            "exhaust": state.exhaust_state
-        }
-    }), 200
+        # Response back to ESP32
+        return jsonify({
+            "status": "success",
+            "device_id": device_id,
+            "is_ai_mode": state.is_ai_mode,
+            "control": {
+                "heater": state.heater_state,
+                "fan": state.fan_state,
+                "exhaust": state.exhaust_state
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        tb = traceback.format_exc()
+        print("[CRITICAL TELEMETRY ERROR]", tb)
+        return jsonify({"error": str(e), "traceback": tb}), 500
 
 
 # =============================================================================
