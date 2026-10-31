@@ -438,6 +438,67 @@ body {
   color: var(--blue-water);
 }
 
+/* Emergency Error Alert Banner */
+.error-alert-banner {
+  background: #fee2e2;
+  border-bottom: 2px solid #ef4444;
+  padding: 14px 24px;
+  animation: pulseAlert 2s infinite;
+}
+
+@keyframes pulseAlert {
+  0%, 100% { background-color: #fee2e2; }
+  50% { background-color: #fecaca; }
+}
+
+.error-alert-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.error-alert-icon {
+  font-size: 28px;
+}
+
+.error-alert-text {
+  flex: 1;
+}
+
+.error-alert-text h4 {
+  margin: 0 0 4px 0;
+  color: #b91c1c;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.error-alert-text p {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.btn-mute-alarm {
+  background: #b91c1c;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-mute-alarm:hover {
+  background: #991b1b;
+}
+
 /* Main Content Body */
 .content-body {
   max-width: 1600px;

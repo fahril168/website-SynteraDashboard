@@ -82,6 +82,71 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClearLogs = document.getElementById('btnClearLogs');
   const btnExportCSV = document.getElementById('btnExportCSV');
 
+  // Audio Alarm Synthesis (Web Audio API - Bip-Bip Nada Alarm)
+  let audioCtx = null;
+  let alarmInterval = null;
+  let isAlarmMuted = false;
+
+  const errorAlertBanner = document.getElementById('errorAlertBanner');
+  const btnMuteAlarm = document.getElementById('btnMuteAlarm');
+
+  if (btnMuteAlarm) {
+    btnMuteAlarm.addEventListener('click', () => {
+      isAlarmMuted = true;
+      stopAlarmSound();
+      btnMuteAlarm.textContent = 'Suara Dimatikan 🔇';
+      btnMuteAlarm.style.background = '#4b5563';
+    });
+  }
+
+  function playSingleBeep(frequency = 900, duration = 0.12) {
+    if (isAlarmMuted) return;
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square'; // Nada tajam khas alarm buzzer
+      osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+      console.warn('Audio API error:', e);
+    }
+  }
+
+  function startAlarmSound() {
+    if (alarmInterval || isAlarmMuted) return;
+    // Mainkan pola: bip-bip-bip cepat setiap 1 detik
+    playBeepPattern();
+    alarmInterval = setInterval(playBeepPattern, 1200);
+  }
+
+  function playBeepPattern() {
+    if (isAlarmMuted) return;
+    playSingleBeep(920, 0.1);
+    setTimeout(() => playSingleBeep(920, 0.1), 160);
+    setTimeout(() => playSingleBeep(920, 0.1), 320);
+  }
+
+  function stopAlarmSound() {
+    if (alarmInterval) {
+      clearInterval(alarmInterval);
+      alarmInterval = null;
+    }
+  }
+
   // Initialize Line Chart, Donut Chart, and Speedometer Gauge
   initLineChart();
   initDonutChart();
@@ -194,6 +259,22 @@ document.addEventListener('DOMContentLoaded', () => {
     heaterState = isRunning ? !!state.heater_state : false;
     fanState = isRunning ? !!state.fan_state : false;
     exhaustState = isRunning ? !!(state.exhaust_state || state.peltier_state) : false;
+
+    // Penanganan Tampilan & Suara Alarm ERROR
+    const isError = isConnected && state.machine_status === 'ERROR';
+    if (errorAlertBanner) {
+      errorAlertBanner.style.display = isError ? 'block' : 'none';
+      if (isError) {
+        startAlarmSound();
+      } else {
+        stopAlarmSound();
+        isAlarmMuted = false;
+        if (btnMuteAlarm) {
+          btnMuteAlarm.textContent = 'Matikan Suara 🔇';
+          btnMuteAlarm.style.background = '#b91c1c';
+        }
+      }
+    }
 
     if (systemStatusBadge) {
       systemStatusBadge.classList.toggle('online', isConnected);

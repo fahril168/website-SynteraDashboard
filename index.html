@@ -49,6 +49,18 @@
       </div>
     </header>
 
+    <!-- Emergency Error Alarm Banner (Hidden by Default) -->
+    <div id="errorAlertBanner" class="error-alert-banner" style="display: none;">
+      <div class="error-alert-content">
+        <div class="error-alert-icon">⚠️</div>
+        <div class="error-alert-text">
+          <h4 id="errorAlertTitle">PERINGATAN: SUHU PEMANAS TERLALU TINGGI!</h4>
+          <p id="errorAlertDesc">Pemanas dimatikan otomatis demi keamanan. Kipas buang menyala membuang hawa panas. Harap periksa kabinet atau tekan tombol OFF.</p>
+        </div>
+        <button id="btnMuteAlarm" class="btn-mute-alarm" title="Matikan Bunyi Alarm">Matikan Suara 🔇</button>
+      </div>
+    </div>
+
     <!-- Dashboard Main Body (125% Scaled) -->
     <main class="content-body" id="mainContentBody">
       <!-- Top Section: Gauge (Left) + 2x2 Metrics (Center) + Donut Chart (Right, 2 Rows Tall) -->
