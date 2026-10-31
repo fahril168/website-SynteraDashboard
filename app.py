@@ -667,6 +667,15 @@ def serve_css():
 
 with app.app_context():
     db.create_all()
+    # Migrasi otomatis jika kolom elapsed_seconds belum ada di tabel SQLite
+    try:
+        conn = db.engine.connect()
+        conn.execute(db.text("ALTER TABLE device_state ADD COLUMN elapsed_seconds INTEGER DEFAULT 0"))
+        conn.commit()
+        conn.close()
+        print("[MIGRATION] Kolom elapsed_seconds berhasil ditambahkan ke device_state")
+    except Exception:
+        pass
     seed_initial_data()
 
 if __name__ == '__main__':
