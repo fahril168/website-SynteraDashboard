@@ -301,21 +301,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Donut Chart
-    const actCount = isConnected ? ((heaterState ? 1 : 0) + (fanState ? 1 : 0) + (exhaustState ? 1 : 0)) : 0;
-    if (donutValText) donutValText.textContent = actCount > 0 ? `${Math.round((actCount / 3) * 100)}%` : '0%';
-    if (donutLblText) donutLblText.textContent = actCount > 0 ? 'Aktif' : 'Standby';
+    // Donut Chart - Hitung total beban daya aktif (Pemanas 50% + Kipas 30% + Exhaust 20%)
+    const hVal = (isConnected && heaterState) ? 50 : 0;
+    const fVal = (isConnected && fanState) ? 30 : 0;
+    const pVal = (isConnected && exhaustState) ? 20 : 0;
+    const totalLoadPct = hVal + fVal + pVal;
+
+    if (donutValText) donutValText.textContent = `${totalLoadPct}%`;
+    if (donutLblText) donutLblText.textContent = totalLoadPct > 0 ? 'Aktif' : 'Standby';
 
     // Update persentase masing-masing beban kerja aktuator
-    if (donutPctHeater) donutPctHeater.textContent = (isConnected && heaterState) ? '50%' : '0%';
-    if (donutPctFan) donutPctFan.textContent = (isConnected && fanState) ? '30%' : '0%';
-    if (donutPctPeltier) donutPctPeltier.textContent = (isConnected && exhaustState) ? '20%' : '0%';
+    if (donutPctHeater) donutPctHeater.textContent = `${hVal}%`;
+    if (donutPctFan) donutPctFan.textContent = `${fVal}%`;
+    if (donutPctPeltier) donutPctPeltier.textContent = `${pVal}%`;
 
     if (actuatorDonutChart) {
-      if (isConnected && actCount > 0) {
-        const hVal = heaterState ? 50 : 0;
-        const fVal = fanState ? 30 : 0;
-        const pVal = exhaustState ? 20 : 0;
+      if (totalLoadPct > 0) {
         actuatorDonutChart.data.datasets[0].data = [hVal, fVal, pVal];
         actuatorDonutChart.data.datasets[0].backgroundColor = ['#e11d48', '#0284c7', '#7c3aed'];
       } else {
