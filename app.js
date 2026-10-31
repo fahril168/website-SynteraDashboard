@@ -183,11 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
     currentDryingRate = typeof state.current_drying_rate === 'number' ? state.current_drying_rate : null;
     heaterTemp = typeof state.heater_temp === 'number' ? state.heater_temp : null;
 
-    heaterState = !!state.heater_state;
-    fanState = !!state.fan_state;
-    exhaustState = !!(state.exhaust_state || state.peltier_state);
-
     const isConnected = state.connection === 'ONLINE';
+
+    heaterState = isConnected ? !!state.heater_state : false;
+    fanState = isConnected ? !!state.fan_state : false;
+    exhaustState = isConnected ? !!(state.exhaust_state || state.peltier_state) : false;
+
     if (systemStatusBadge) {
       systemStatusBadge.classList.toggle('online', isConnected);
       systemStatusBadge.classList.toggle('offline', !isConnected);
@@ -287,17 +288,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Donut Chart
-    const actCount = (heaterState ? 1 : 0) + (fanState ? 1 : 0) + (exhaustState ? 1 : 0);
+    const actCount = isConnected ? ((heaterState ? 1 : 0) + (fanState ? 1 : 0) + (exhaustState ? 1 : 0)) : 0;
     if (donutValText) donutValText.textContent = actCount > 0 ? `${Math.round((actCount / 3) * 100)}%` : '0%';
     if (donutLblText) donutLblText.textContent = actCount > 0 ? 'Aktif' : 'Standby';
 
     // Update persentase masing-masing beban kerja aktuator
-    if (donutPctHeater) donutPctHeater.textContent = heaterState ? '50%' : '0%';
-    if (donutPctFan) donutPctFan.textContent = fanState ? '30%' : '0%';
-    if (donutPctPeltier) donutPctPeltier.textContent = exhaustState ? '20%' : '0%';
+    if (donutPctHeater) donutPctHeater.textContent = (isConnected && heaterState) ? '50%' : '0%';
+    if (donutPctFan) donutPctFan.textContent = (isConnected && fanState) ? '30%' : '0%';
+    if (donutPctPeltier) donutPctPeltier.textContent = (isConnected && exhaustState) ? '20%' : '0%';
 
     if (actuatorDonutChart) {
-      if (actCount > 0) {
+      if (isConnected && actCount > 0) {
         const hVal = heaterState ? 50 : 0;
         const fVal = fanState ? 30 : 0;
         const pVal = exhaustState ? 20 : 0;
