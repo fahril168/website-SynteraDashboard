@@ -103,6 +103,7 @@ class DeviceState(db.Model):
     heater_temp = db.Column(db.Float, nullable=True)
     run_time = db.Column(db.String(20), default='00:00:00')
     est_time = db.Column(db.String(20), default='--:--')
+    machine_status = db.Column(db.String(20), default='STANDBY') # STANDBY, PROSES, SELESAI, ERROR
 
     # Actuator states
     is_ai_mode = db.Column(db.Boolean, default=True)
@@ -130,6 +131,7 @@ class DeviceState(db.Model):
         return {
             'is_system_on': True,
             'connection': self.connection_status,
+            'machine_status': self.machine_status if self.connection_status == 'ONLINE' else 'STANDBY',
             'is_ai_mode': self.is_ai_mode,
             'current_temp': self.current_temp,
             'current_humidity': self.current_humidity,
@@ -453,6 +455,8 @@ def handle_esp32_telemetry():
                 state.run_time = str(data['run_time'])
             if 'est_time' in data:
                 state.est_time = str(data['est_time'])
+            if 'status' in data:
+                state.machine_status = str(data['status'])
         except Exception:
             pass
 

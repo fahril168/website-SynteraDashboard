@@ -184,17 +184,22 @@ document.addEventListener('DOMContentLoaded', () => {
     heaterTemp = typeof state.heater_temp === 'number' ? state.heater_temp : null;
 
     const isConnected = state.connection === 'ONLINE';
+    const isRunning = isConnected && (state.machine_status === 'PROSES' || state.machine_status === 'BERJALAN' || state.machine_status === 'PENDINGINAN');
 
-    heaterState = isConnected ? !!state.heater_state : false;
-    fanState = isConnected ? !!state.fan_state : false;
-    exhaustState = isConnected ? !!(state.exhaust_state || state.peltier_state) : false;
+    heaterState = isRunning ? !!state.heater_state : false;
+    fanState = isRunning ? !!state.fan_state : false;
+    exhaustState = isRunning ? !!(state.exhaust_state || state.peltier_state) : false;
 
     if (systemStatusBadge) {
       systemStatusBadge.classList.toggle('online', isConnected);
       systemStatusBadge.classList.toggle('offline', !isConnected);
     }
     if (systemStatusText) {
-      systemStatusText.textContent = isConnected ? 'ESP32 Connected (5s)' : 'ESP32 Offline / Menunggu...';
+      if (!isConnected) {
+        systemStatusText.textContent = 'ESP32 Offline / Menunggu...';
+      } else {
+        systemStatusText.textContent = isRunning ? 'Mesin Berjalan (PROSES)' : 'Alat Siaga (STANDBY)';
+      }
     }
 
     if (controlModeTag) {
@@ -244,8 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (telemetryChart) telemetryChart.update();
 
       // Tampilkan Perkiraan Selesai & Lama Berjalan murni langsung dari ESP32
-      const estTimeStr = state.est_time || '--:--';
-      const runTimeStr = state.run_time || '00:00:00';
+      const estTimeStr = isRunning ? (state.est_time || '--:--') : '--:--';
+      const runTimeStr = isRunning ? (state.run_time || '00:00:00') : '00:00:00';
 
       if (valEstTimeDigits) {
         valEstTimeDigits.textContent = estTimeStr;
