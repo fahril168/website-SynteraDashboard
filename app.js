@@ -650,14 +650,14 @@ document.addEventListener('DOMContentLoaded', () => {
         scales: {
           x: { grid: { color: 'rgba(0, 0, 0, 0.04)' }, ticks: { color: '#64748b', font: { size: 11 } } },
           yTemp: {
-            type: 'linear', position: 'left', min: 20, max: 60,
+            type: 'linear', position: 'left', min: 30, max: 48,
             grid: { color: 'rgba(0, 0, 0, 0.04)' },
-            ticks: { color: '#e11d48', font: { size: 11 } }
+            ticks: { color: '#e11d48', font: { size: 11 }, stepSize: 3 }
           },
           yRH: {
-            type: 'linear', position: 'right', min: 10, max: 90,
+            type: 'linear', position: 'right', min: 35, max: 70,
             grid: { drawOnChartArea: false },
-            ticks: { color: '#0284c7', font: { size: 11 } }
+            ticks: { color: '#0284c7', font: { size: 11 }, stepSize: 5 }
           }
         }
       }
