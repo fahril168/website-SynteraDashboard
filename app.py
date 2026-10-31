@@ -124,8 +124,8 @@ class DeviceState(db.Model):
 
     def to_state_dict(self):
         """Return state dict in the same format the old single-device system_state used."""
-        # Auto-detect offline: no data for > 15 seconds
-        if self.last_seen and (time.time() - self.last_seen > 15):
+        # Auto-detect offline: no data for > 10 seconds
+        if self.last_seen and (time.time() - self.last_seen > 10):
             self.connection_status = 'OFFLINE'
 
         return {
@@ -389,7 +389,7 @@ def api_user_devices():
         info = d.to_dict()
         if d.state:
             info['connection'] = d.state.connection_status
-            if d.state.last_seen and (time.time() - d.state.last_seen > 15):
+            if d.state.last_seen and (time.time() - d.state.last_seen > 10):
                 info['connection'] = 'OFFLINE'
         else:
             info['connection'] = 'OFFLINE'
